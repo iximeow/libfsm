@@ -288,14 +288,14 @@ static const struct fsm_state *
 fsm_any(const struct fsm *fsm,
     int (*predicate)(const struct fsm *, const struct fsm_state *))
 {
-	const struct fsm_state *s;
+	size_t i;
 	
 	assert(fsm != NULL);
 	assert(predicate != NULL);
 	
-	for (s = fsm->sl; s != NULL; s = s->next) {
-		if (predicate(fsm, s)) {
-			return s;
+	for (i = 0; i < fsm->statecount; i++) {
+		if (predicate(fsm, fsm->states[i])) {
+			return fsm->states[i];
 		}
 	}
 	
@@ -325,10 +325,10 @@ fsm_unionxy(struct fsm *a, struct fsm *b, struct fsm_state *x, struct fsm_state 
 	
 	/* TODO: centralise as fsm_clearends() or somesuch */
 	{
-		struct fsm_state *s;
+		size_t i;
 
-		for (s = b->sl; s != NULL; s = s->next) {
-			fsm_setend(b, s, 0);
+		for (i = 0; i < b->statecount; i++) {
+			fsm_setend(b, b->states[i], 0);
 		}
 	}
 	
