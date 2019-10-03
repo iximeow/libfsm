@@ -12,7 +12,7 @@ utf8_Han_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[41] = { 0 };
+	fsm_state_t s[41] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,8 +20,7 @@ utf8_Han_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 41; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}
@@ -44,53 +43,53 @@ utf8_Han_fsm(const struct fsm_options *opt)
 	for (i = 0x84; i <= 0x87; i++) {
 		if (!fsm_addedge_literal(fsm, s[1], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[1], s[12], 0x9c)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[1], s[29], 0x9c)) { goto error; }
 	for (i = 0xbc; i <= 0xbe; i++) {
 		if (!fsm_addedge_literal(fsm, s[2], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[2], s[14], 0xba)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[2], s[15], 0xbb)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[2], s[16], 0xbf)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[15], 0xba)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[16], 0xbb)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[17], 0xbf)) { goto error; }
 	if (!fsm_addedge_literal(fsm, s[3], s[11], 0x85)) { goto error; }
 	for (i = 0x90; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[3], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[3], s[19], 0x89)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[3], s[24], 0x80)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[3], s[25], 0x84)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[3], s[26], 0x86)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[3], s[27], 0x88)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[18], 0x80)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[19], 0x84)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[20], 0x86)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[21], 0x88)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[22], 0x89)) { goto error; }
 	for (i = 0x80; i <= 0xb5; i++) {
 		if (!fsm_addedge_literal(fsm, s[4], s[11], i)) { goto error; }
 	}
 	for (i = 0xb8; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[4], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[4], s[28], 0xb6)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[4], s[14], 0xb6)) { goto error; }
 	for (i = 0x80; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[5], s[11], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0xbe; i++) {
 		if (!fsm_addedge_literal(fsm, s[6], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[6], s[29], 0xbf)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[6], s[25], 0xbf)) { goto error; }
 	for (i = 0xb0; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[7], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[7], s[21], 0xa5)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[7], s[24], 0xa5)) { goto error; }
 	for (i = 0x80; i <= 0x9d; i++) {
 		if (!fsm_addedge_literal(fsm, s[8], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[8], s[22], 0x9e)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[8], s[23], 0x9f)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[8], s[12], 0x9e)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[8], s[13], 0x9f)) { goto error; }
 	for (i = 0xa4; i <= 0xa8; i++) {
 		if (!fsm_addedge_literal(fsm, s[9], s[11], i)) { goto error; }
 	}
 	if (!fsm_addedge_literal(fsm, s[9], s[11], 0xaa)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[9], s[17], 0xa9)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[9], s[18], 0xab)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[9], s[19], 0xbe)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[9], s[20], 0xbf)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[9], s[22], 0xbe)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[9], s[26], 0xa9)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[9], s[27], 0xab)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[9], s[28], 0xbf)) { goto error; }
 	for (i = 0xa0; i <= 0xa9; i++) {
 		if (!fsm_addedge_literal(fsm, s[10], s[5], i)) { goto error; }
 	}
@@ -101,87 +100,87 @@ utf8_Han_fsm(const struct fsm_options *opt)
 	if (!fsm_addedge_literal(fsm, s[10], s[33], 0xae)) { goto error; }
 	if (!fsm_addedge_literal(fsm, s[10], s[34], 0xaf)) { goto error; }
 	for (i = 0x80; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[11], s[13], i)) { goto error; }
-	}
-	for (i = 0xa0; i <= 0xb4; i++) {
-		if (!fsm_addedge_literal(fsm, s[12], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0x99; i++) {
-		if (!fsm_addedge_literal(fsm, s[14], s[13], i)) { goto error; }
-	}
-	for (i = 0x9b; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[14], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0xb3; i++) {
-		if (!fsm_addedge_literal(fsm, s[15], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0x95; i++) {
-		if (!fsm_addedge_literal(fsm, s[16], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0xad; i++) {
-		if (!fsm_addedge_literal(fsm, s[17], s[13], i)) { goto error; }
-	}
-	for (i = 0xb0; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[17], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0x99; i++) {
-		if (!fsm_addedge_literal(fsm, s[18], s[13], i)) { goto error; }
-	}
-	for (i = 0xa0; i <= 0xbe; i++) {
-		if (!fsm_addedge_literal(fsm, s[19], s[13], i)) { goto error; }
-	}
-	for (i = 0x82; i <= 0x87; i++) {
-		if (!fsm_addedge_literal(fsm, s[20], s[13], i)) { goto error; }
-	}
-	for (i = 0x8a; i <= 0x8f; i++) {
-		if (!fsm_addedge_literal(fsm, s[20], s[13], i)) { goto error; }
-	}
-	for (i = 0x92; i <= 0x97; i++) {
-		if (!fsm_addedge_literal(fsm, s[20], s[13], i)) { goto error; }
-	}
-	for (i = 0x9a; i <= 0x9c; i++) {
-		if (!fsm_addedge_literal(fsm, s[20], s[13], i)) { goto error; }
-	}
-	for (i = 0xa0; i <= 0xbc; i++) {
-		if (!fsm_addedge_literal(fsm, s[21], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[11], s[23], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0xa3; i++) {
-		if (!fsm_addedge_literal(fsm, s[22], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[12], s[23], i)) { goto error; }
 	}
 	for (i = 0xb0; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[22], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[12], s[23], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0x86; i++) {
-		if (!fsm_addedge_literal(fsm, s[23], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[13], s[23], i)) { goto error; }
 	}
 	for (i = 0x8b; i <= 0xbb; i++) {
-		if (!fsm_addedge_literal(fsm, s[23], s[13], i)) { goto error; }
-	}
-	if (!fsm_addedge_literal(fsm, s[24], s[13], 0x85)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[24], s[13], 0x87)) { goto error; }
-	for (i = 0xa1; i <= 0xa9; i++) {
-		if (!fsm_addedge_literal(fsm, s[24], s[13], i)) { goto error; }
-	}
-	for (i = 0xae; i <= 0xaf; i++) {
-		if (!fsm_addedge_literal(fsm, s[24], s[13], i)) { goto error; }
-	}
-	for (i = 0xb8; i <= 0xbb; i++) {
-		if (!fsm_addedge_literal(fsm, s[24], s[13], i)) { goto error; }
-	}
-	for (i = 0xb1; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[25], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0x8e; i++) {
-		if (!fsm_addedge_literal(fsm, s[26], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0x9e; i++) {
-		if (!fsm_addedge_literal(fsm, s[27], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[13], s[23], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0xb5; i++) {
-		if (!fsm_addedge_literal(fsm, s[28], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[14], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x99; i++) {
+		if (!fsm_addedge_literal(fsm, s[15], s[23], i)) { goto error; }
+	}
+	for (i = 0x9b; i <= 0xbf; i++) {
+		if (!fsm_addedge_literal(fsm, s[15], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0xb3; i++) {
+		if (!fsm_addedge_literal(fsm, s[16], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x95; i++) {
+		if (!fsm_addedge_literal(fsm, s[17], s[23], i)) { goto error; }
+	}
+	if (!fsm_addedge_literal(fsm, s[18], s[23], 0x85)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[18], s[23], 0x87)) { goto error; }
+	for (i = 0xa1; i <= 0xa9; i++) {
+		if (!fsm_addedge_literal(fsm, s[18], s[23], i)) { goto error; }
+	}
+	for (i = 0xae; i <= 0xaf; i++) {
+		if (!fsm_addedge_literal(fsm, s[18], s[23], i)) { goto error; }
+	}
+	for (i = 0xb8; i <= 0xbb; i++) {
+		if (!fsm_addedge_literal(fsm, s[18], s[23], i)) { goto error; }
+	}
+	for (i = 0xb1; i <= 0xbf; i++) {
+		if (!fsm_addedge_literal(fsm, s[19], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x8e; i++) {
+		if (!fsm_addedge_literal(fsm, s[20], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x9e; i++) {
+		if (!fsm_addedge_literal(fsm, s[21], s[23], i)) { goto error; }
+	}
+	for (i = 0xa0; i <= 0xbe; i++) {
+		if (!fsm_addedge_literal(fsm, s[22], s[23], i)) { goto error; }
+	}
+	for (i = 0xa0; i <= 0xbc; i++) {
+		if (!fsm_addedge_literal(fsm, s[24], s[23], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0xaa; i++) {
-		if (!fsm_addedge_literal(fsm, s[29], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[25], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0xad; i++) {
+		if (!fsm_addedge_literal(fsm, s[26], s[23], i)) { goto error; }
+	}
+	for (i = 0xb0; i <= 0xbf; i++) {
+		if (!fsm_addedge_literal(fsm, s[26], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x99; i++) {
+		if (!fsm_addedge_literal(fsm, s[27], s[23], i)) { goto error; }
+	}
+	for (i = 0x82; i <= 0x87; i++) {
+		if (!fsm_addedge_literal(fsm, s[28], s[23], i)) { goto error; }
+	}
+	for (i = 0x8a; i <= 0x8f; i++) {
+		if (!fsm_addedge_literal(fsm, s[28], s[23], i)) { goto error; }
+	}
+	for (i = 0x92; i <= 0x97; i++) {
+		if (!fsm_addedge_literal(fsm, s[28], s[23], i)) { goto error; }
+	}
+	for (i = 0x9a; i <= 0x9c; i++) {
+		if (!fsm_addedge_literal(fsm, s[28], s[23], i)) { goto error; }
+	}
+	for (i = 0xa0; i <= 0xb4; i++) {
+		if (!fsm_addedge_literal(fsm, s[29], s[23], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0x9a; i++) {
 		if (!fsm_addedge_literal(fsm, s[30], s[11], i)) { goto error; }
@@ -199,50 +198,50 @@ utf8_Han_fsm(const struct fsm_options *opt)
 	for (i = 0xa1; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[31], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[31], s[39], 0x9c)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[31], s[40], 0xa0)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[31], s[35], 0x9c)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[31], s[36], 0xa0)) { goto error; }
 	for (i = 0x80; i <= 0xb9; i++) {
 		if (!fsm_addedge_literal(fsm, s[32], s[11], i)) { goto error; }
 	}
 	for (i = 0xbb; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[32], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[32], s[38], 0xba)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[32], s[39], 0xba)) { goto error; }
 	for (i = 0x80; i <= 0xae; i++) {
 		if (!fsm_addedge_literal(fsm, s[33], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[33], s[36], 0xaf)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[33], s[38], 0xaf)) { goto error; }
 	for (i = 0xa0; i <= 0xa7; i++) {
 		if (!fsm_addedge_literal(fsm, s[34], s[11], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[34], s[35], 0xa8)) { goto error; }
-	for (i = 0x80; i <= 0x9d; i++) {
-		if (!fsm_addedge_literal(fsm, s[35], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0xa0; i++) {
-		if (!fsm_addedge_literal(fsm, s[36], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0x96; i++) {
-		if (!fsm_addedge_literal(fsm, s[37], s[13], i)) { goto error; }
-	}
-	for (i = 0x80; i <= 0xa1; i++) {
-		if (!fsm_addedge_literal(fsm, s[38], s[13], i)) { goto error; }
-	}
-	for (i = 0xb0; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[38], s[13], i)) { goto error; }
-	}
+	if (!fsm_addedge_literal(fsm, s[34], s[40], 0xa8)) { goto error; }
 	for (i = 0x80; i <= 0xb4; i++) {
-		if (!fsm_addedge_literal(fsm, s[39], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[35], s[23], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0x9d; i++) {
-		if (!fsm_addedge_literal(fsm, s[40], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[36], s[23], i)) { goto error; }
 	}
 	for (i = 0xa0; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[40], s[13], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[36], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x96; i++) {
+		if (!fsm_addedge_literal(fsm, s[37], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0xa0; i++) {
+		if (!fsm_addedge_literal(fsm, s[38], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0xa1; i++) {
+		if (!fsm_addedge_literal(fsm, s[39], s[23], i)) { goto error; }
+	}
+	for (i = 0xb0; i <= 0xbf; i++) {
+		if (!fsm_addedge_literal(fsm, s[39], s[23], i)) { goto error; }
+	}
+	for (i = 0x80; i <= 0x9d; i++) {
+		if (!fsm_addedge_literal(fsm, s[40], s[23], i)) { goto error; }
 	}
 
 	fsm_setstart(fsm, s[0]);
-	fsm_setend(fsm, s[13], 1);
+	fsm_setend(fsm, s[23], 1);
 
 	return fsm;
 

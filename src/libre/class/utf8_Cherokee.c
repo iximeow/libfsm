@@ -12,7 +12,7 @@ utf8_Cherokee_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[8] = { 0 };
+	fsm_state_t s[8] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,31 +20,30 @@ utf8_Cherokee_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 8; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}
 
 	if (!fsm_addedge_literal(fsm, s[0], s[1], 0xe1)) { goto error; }
 	if (!fsm_addedge_literal(fsm, s[0], s[2], 0xea)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[1], s[6], 0x8e)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[1], s[7], 0x8f)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[2], s[3], 0xad)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[2], s[4], 0xae)) { goto error; }
-	for (i = 0xb0; i <= 0xbf; i++) {
+	if (!fsm_addedge_literal(fsm, s[1], s[3], 0x8e)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[1], s[4], 0x8f)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[6], 0xad)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[7], 0xae)) { goto error; }
+	for (i = 0xa0; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[3], s[5], i)) { goto error; }
 	}
-	for (i = 0x80; i <= 0xbf; i++) {
+	for (i = 0x80; i <= 0xb5; i++) {
 		if (!fsm_addedge_literal(fsm, s[4], s[5], i)) { goto error; }
 	}
-	for (i = 0xa0; i <= 0xbf; i++) {
+	for (i = 0xb8; i <= 0xbd; i++) {
+		if (!fsm_addedge_literal(fsm, s[4], s[5], i)) { goto error; }
+	}
+	for (i = 0xb0; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[6], s[5], i)) { goto error; }
 	}
-	for (i = 0x80; i <= 0xb5; i++) {
-		if (!fsm_addedge_literal(fsm, s[7], s[5], i)) { goto error; }
-	}
-	for (i = 0xb8; i <= 0xbd; i++) {
+	for (i = 0x80; i <= 0xbf; i++) {
 		if (!fsm_addedge_literal(fsm, s[7], s[5], i)) { goto error; }
 	}
 

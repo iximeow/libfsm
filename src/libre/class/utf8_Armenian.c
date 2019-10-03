@@ -12,7 +12,7 @@ utf8_Armenian_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[7] = { 0 };
+	fsm_state_t s[7] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,8 +20,7 @@ utf8_Armenian_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 7; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}
@@ -31,31 +30,31 @@ utf8_Armenian_fsm(const struct fsm_options *opt)
 	if (!fsm_addedge_literal(fsm, s[0], s[3], 0xd6)) { goto error; }
 	if (!fsm_addedge_literal(fsm, s[0], s[4], 0xef)) { goto error; }
 	for (i = 0xb1; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[1], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[1], s[5], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0x96; i++) {
-		if (!fsm_addedge_literal(fsm, s[2], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[2], s[5], i)) { goto error; }
 	}
 	for (i = 0x99; i <= 0x9f; i++) {
-		if (!fsm_addedge_literal(fsm, s[2], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[2], s[5], i)) { goto error; }
 	}
 	for (i = 0xa1; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[2], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[2], s[5], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0x87; i++) {
-		if (!fsm_addedge_literal(fsm, s[3], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[3], s[5], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[3], s[6], 0x8a)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[5], 0x8a)) { goto error; }
 	for (i = 0x8d; i <= 0x8f; i++) {
-		if (!fsm_addedge_literal(fsm, s[3], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[3], s[5], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[4], s[5], 0xac)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[4], s[6], 0xac)) { goto error; }
 	for (i = 0x93; i <= 0x97; i++) {
-		if (!fsm_addedge_literal(fsm, s[5], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[6], s[5], i)) { goto error; }
 	}
 
 	fsm_setstart(fsm, s[0]);
-	fsm_setend(fsm, s[6], 1);
+	fsm_setend(fsm, s[5], 1);
 
 	return fsm;
 

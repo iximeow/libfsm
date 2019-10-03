@@ -12,7 +12,7 @@ utf8_Tangut_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[10] = { 0 };
+	fsm_state_t s[10] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,8 +20,7 @@ utf8_Tangut_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 10; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}
@@ -30,31 +29,31 @@ utf8_Tangut_fsm(const struct fsm_options *opt)
 	if (!fsm_addedge_literal(fsm, s[1], s[2], 0x96)) { goto error; }
 	if (!fsm_addedge_literal(fsm, s[1], s[3], 0x97)) { goto error; }
 	if (!fsm_addedge_literal(fsm, s[1], s[4], 0x98)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[2], s[5], 0xbf)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[9], 0xbf)) { goto error; }
 	for (i = 0x80; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[3], s[7], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[3], s[5], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0x9e; i++) {
-		if (!fsm_addedge_literal(fsm, s[4], s[7], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[4], s[5], i)) { goto error; }
 	}
 	for (i = 0xa0; i <= 0xaa; i++) {
-		if (!fsm_addedge_literal(fsm, s[4], s[7], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[4], s[5], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[4], s[8], 0x9f)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[4], s[9], 0xab)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[5], s[6], 0xa0)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[4], s[6], 0x9f)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[4], s[7], 0xab)) { goto error; }
 	for (i = 0x80; i <= 0xbf; i++) {
-		if (!fsm_addedge_literal(fsm, s[7], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[5], s[8], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0xac; i++) {
-		if (!fsm_addedge_literal(fsm, s[8], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[6], s[8], i)) { goto error; }
 	}
 	for (i = 0x80; i <= 0xb2; i++) {
-		if (!fsm_addedge_literal(fsm, s[9], s[6], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[7], s[8], i)) { goto error; }
 	}
+	if (!fsm_addedge_literal(fsm, s[9], s[8], 0xa0)) { goto error; }
 
 	fsm_setstart(fsm, s[0]);
-	fsm_setend(fsm, s[6], 1);
+	fsm_setend(fsm, s[8], 1);
 
 	return fsm;
 

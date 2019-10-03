@@ -12,7 +12,7 @@ utf8_Canadian_Aboriginal_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[6] = { 0 };
+	fsm_state_t s[6] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,8 +20,7 @@ utf8_Canadian_Aboriginal_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 6; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}

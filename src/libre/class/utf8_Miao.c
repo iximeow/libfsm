@@ -12,7 +12,7 @@ utf8_Miao_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[7] = { 0 };
+	fsm_state_t s[7] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,8 +20,7 @@ utf8_Miao_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 7; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}

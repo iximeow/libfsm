@@ -12,7 +12,7 @@ class_ascii_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[2] = { 0 };
+	fsm_state_t s[2] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,15 +20,18 @@ class_ascii_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 2; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}
 
+	for (i = 0x80; i <= 0xff; i++) {
+		if (!fsm_addedge_literal(fsm, s[0], s[0], i)) { goto error; }
+	}
 	for (i = 0x00; i <= 0x7f; i++) {
 		if (!fsm_addedge_literal(fsm, s[0], s[1], i)) { goto error; }
 	}
+	if (!fsm_addedge_any(fsm, s[1], s[1])) { goto error; }
 
 	fsm_setstart(fsm, s[0]);
 	fsm_setend(fsm, s[1], 1);

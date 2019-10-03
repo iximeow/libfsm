@@ -12,7 +12,7 @@ utf8_Z_fsm(const struct fsm_options *opt)
 	struct fsm *fsm;
 	size_t i;
 
-	struct fsm_state *s[9] = { 0 };
+	fsm_state_t s[9] = { 0 };
 
 	fsm = fsm_new(opt);
 	if (fsm == NULL) {
@@ -20,34 +20,33 @@ utf8_Z_fsm(const struct fsm_options *opt)
 	}
 
 	for (i = 0; i < 9; i++) {
-		s[i] = fsm_addstate(fsm);
-		if (s[i] == NULL) {
+		if (!fsm_addstate(fsm, &s[i])) {
 			goto error;
 		}
 	}
 
-	if (!fsm_addedge_literal(fsm, s[0], s[1], 0xc2)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[0], s[2], 0xe1)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[0], s[3], 0xe2)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[0], s[4], 0xe3)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[0], s[5], ' ')) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[1], s[5], 0xa0)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[2], s[6], 0x9a)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[3], s[7], 0x80)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[3], s[8], 0x81)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[4], s[6], 0x80)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[6], s[5], 0x80)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[0], s[1], ' ')) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[0], s[2], 0xc2)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[0], s[3], 0xe1)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[0], s[4], 0xe2)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[0], s[5], 0xe3)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[2], s[1], 0xa0)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[3], s[6], 0x9a)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[4], s[7], 0x80)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[4], s[8], 0x81)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[5], s[6], 0x80)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[6], s[1], 0x80)) { goto error; }
 	for (i = 0x80; i <= 0x8a; i++) {
-		if (!fsm_addedge_literal(fsm, s[7], s[5], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[7], s[1], i)) { goto error; }
 	}
 	for (i = 0xa8; i <= 0xa9; i++) {
-		if (!fsm_addedge_literal(fsm, s[7], s[5], i)) { goto error; }
+		if (!fsm_addedge_literal(fsm, s[7], s[1], i)) { goto error; }
 	}
-	if (!fsm_addedge_literal(fsm, s[7], s[5], 0xaf)) { goto error; }
-	if (!fsm_addedge_literal(fsm, s[8], s[5], 0x9f)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[7], s[1], 0xaf)) { goto error; }
+	if (!fsm_addedge_literal(fsm, s[8], s[1], 0x9f)) { goto error; }
 
 	fsm_setstart(fsm, s[0]);
-	fsm_setend(fsm, s[5], 1);
+	fsm_setend(fsm, s[1], 1);
 
 	return fsm;
 
