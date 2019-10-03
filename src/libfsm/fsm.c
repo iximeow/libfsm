@@ -8,15 +8,15 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <adt/alloc.h>
-#include <adt/set.h>
-#include <adt/stateset.h>
-#include <adt/edgeset.h>
-
 #include <fsm/alloc.h>
 #include <fsm/fsm.h>
 #include <fsm/print.h>
 #include <fsm/options.h>
+
+#include <adt/alloc.h>
+#include <adt/set.h>
+#include <adt/stateset.h>
+#include <adt/edgeset.h>
 
 #include "internal.h"
 
@@ -74,7 +74,7 @@ fsm_new(const struct fsm_options *opt)
 		return NULL;
 	}
 
-	new->start  = NULL;
+	fsm_clearstart(new);
 
 	new->opt = opt;
 
@@ -127,7 +127,7 @@ fsm_move(struct fsm *dst, struct fsm *src)
 
 void
 fsm_carryopaque(struct fsm *fsm, const struct state_set *set,
-	struct fsm *new, struct fsm_state *state)
+	struct fsm *new, fsm_state_t state)
 {
 	ctassert(sizeof (void *) == sizeof (struct fsm_state *));
 

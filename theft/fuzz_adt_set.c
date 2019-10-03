@@ -178,11 +178,8 @@ get_pos(uintptr_t item, size_t *offset, uint64_t *bit)
 static bool
 op_add(struct model *m, struct set_op *op, struct set *set)
 {
-	struct set *old_s;
 	size_t offset;
 	uint64_t bit;
-
-	old_s = set;
 
 	assert(op->u.add.item != 0);
 
@@ -202,11 +199,8 @@ op_add(struct model *m, struct set_op *op, struct set *set)
 static bool
 op_remove(struct model *m, struct set_op *op, struct set *set)
 {
-	struct set *old_s;
 	size_t offset;
 	uint64_t bit;
-
-	old_s = set;
 
 	assert(op->u.remove.item != 0);
 

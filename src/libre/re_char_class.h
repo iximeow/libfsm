@@ -158,7 +158,7 @@ int
 re_char_class_ast_compile(struct re_char_class_ast *cca,
     struct fsm *fsm, enum re_flags flags,
     struct re_err *err, const struct fsm_options *opt,
-    struct fsm_state *x, struct fsm_state *y);
+    fsm_state_t x, fsm_state_t y);
 
 const char *
 re_char_class_id_str(enum ast_char_class_id id);

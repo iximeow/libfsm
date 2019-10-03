@@ -273,17 +273,16 @@ addmatch(struct match **head, int i, const char *s)
 }
 
 static void
-carryopaque(const struct fsm_state **set, size_t n,
-	struct fsm *fsm, struct fsm_state *state)
+carryopaque(const fsm_state_t *set, size_t n,
+	struct fsm *fsm, fsm_state_t state)
 {
 	struct match *matches;
 	struct match *m;
 	size_t i;
 
-	assert(set != NULL); /* TODO: right? */
+	assert(set != NULL);
 	assert(n > 0); /* TODO: right? */
 	assert(fsm != NULL);
-	assert(state != NULL);
 
 	if (!fsm_isend(fsm, state)) {
 		return;
@@ -329,14 +328,13 @@ error:
 }
 
 static void
-printexample(FILE *f, const struct fsm *fsm, const struct fsm_state *state)
+printexample(FILE *f, const struct fsm *fsm, fsm_state_t state)
 {
 	char buf[256]; /* TODO */
 	int n;
 
 	assert(f != NULL);
 	assert(fsm != NULL);
-	assert(state != NULL);
 
 	n = fsm_example(fsm, state, buf, sizeof buf);
 	if (-1 == n) {
@@ -657,7 +655,7 @@ main(int argc, char *argv[])
 				 * XXX: then use fsm_setendopaque() here.
 				 */
 				for (s = 0; s < new->statecount; s++) {
-					if (fsm_isend(new, new->states[s])) {
+					if (fsm_isend(new, s)) {
 						struct match *matches;
 
 						matches = NULL;
@@ -667,8 +665,8 @@ main(int argc, char *argv[])
 							return EXIT_FAILURE;
 						}
 
-						assert(fsm_getopaque(new, new->states[s]) == NULL);
-						fsm_setopaque(new, new->states[s], matches);
+						assert(fsm_getopaque(new, s) == NULL);
+						fsm_setopaque(new, s, matches);
 					}
 				}
 			}
@@ -744,11 +742,11 @@ main(int argc, char *argv[])
 		for (s = 0; s < dfa->statecount; s++) {
 			const struct match *matches;
 
-			if (!fsm_isend(dfa, dfa->states[s])) {
+			if (!fsm_isend(dfa, s)) {
 				continue;
 			}
 
-			matches = fsm_getopaque(dfa, dfa->states[s]);
+			matches = fsm_getopaque(dfa, s);
 			assert(matches != NULL);
 
 			if (matches->next != NULL) {
@@ -767,7 +765,7 @@ main(int argc, char *argv[])
 				}
 
 				fprintf(stderr, "; for example on input '");
-				printexample(stderr, dfa, dfa->states[s]);
+				printexample(stderr, dfa, s);
 				fprintf(stderr, "'\n");
 
 				/* TODO: consider different error codes */
@@ -803,10 +801,10 @@ main(int argc, char *argv[])
 	}
 
 	if (example) {
-		size_t s;
+		fsm_state_t s;
 
 		for (s = 0; s < fsm->statecount; s++) {
-			if (!fsm_isend(fsm, fsm->states[s])) {
+			if (!fsm_isend(fsm, s)) {
 				continue;
 			}
 
@@ -814,9 +812,9 @@ main(int argc, char *argv[])
 			if (patterns) {
 				const struct match *m;
 
-				assert(fsm_getopaque(fsm, fsm->states[s]) != NULL);
+				assert(fsm_getopaque(fsm, s) != NULL);
 
-				for (m = fsm_getopaque(fsm, fsm->states[s]); m != NULL; m = m->next) {
+				for (m = fsm_getopaque(fsm, s); m != NULL; m = m->next) {
 					/* TODO: print nicely */
 					printf("/%s/", m->s);
 					if (m->next != NULL) {
@@ -827,7 +825,7 @@ main(int argc, char *argv[])
 				printf(": ");
 			}
 
-			printexample(stdout, fsm, fsm->states[s]);
+			printexample(stdout, fsm, s);
 			printf("\n");
 		}
 
@@ -867,14 +865,15 @@ main(int argc, char *argv[])
 			 * a pattern to the end state), like lx(1) does */
 
 			for (i = 0; i < argc; i++) {
-				const struct fsm_state *state;
+				fsm_state_t state;
+				int e;
 
 				if (xfiles) {
 					FILE *f;
 
 					f = xopen(argv[0]);
 
-					state = fsm_exec(fsm, fsm_fgetc, f);
+					e = fsm_exec(fsm, fsm_fgetc, f, &state);
 
 					fclose(f);
 				} else {
@@ -882,10 +881,10 @@ main(int argc, char *argv[])
 
 					s = argv[i];
 
-					state = fsm_exec(fsm, fsm_sgetc, &s);
+					e = fsm_exec(fsm, fsm_sgetc, &s, &state);
 				}
 
-				if (state == NULL) {
+				if (e != 1) {
 					r |= 1;
 					continue;
 				}

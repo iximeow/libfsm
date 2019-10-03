@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include <fsm/fsm.h>
+
 #include <adt/alloc.h>
 #include <adt/set.h>
 #include <adt/dlist.h>
@@ -19,7 +21,7 @@
 
 struct dlist *
 dlist_push(const struct fsm_alloc *a,
-	struct dlist **list, struct fsm_state *state)
+	struct dlist **list, fsm_state_t state)
 {
 	struct dlist *new;
 
@@ -54,7 +56,7 @@ dlist_nextnotdone(struct dlist *list)
 }
 
 int
-dlist_contains(const struct dlist *list, const struct fsm_state *state)
+dlist_contains(const struct dlist *list, fsm_state_t state)
 {
 	const struct dlist *p;
 

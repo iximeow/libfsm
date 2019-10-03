@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Shannon F. Stewman
+ * Copyright 2019 Katherine Flavel
  *
  * See LICENCE for the full copyright terms.
  */
@@ -7,21 +7,94 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
-#include <adt/set.h>
+#include <fsm/fsm.h>
+
+#include <adt/alloc.h>
 #include <adt/stateset.h>
+
+#define SET_INITIAL 8
+
+struct state_set {
+	const struct fsm_alloc *alloc;
+	fsm_state_t *a;
+	size_t i;
+	size_t n;
+};
+
+static int
+state_set_cmpval(fsm_state_t a, fsm_state_t b)
+{
+	return (a > b) - (a < b);
+}
+
+int
+state_set_cmp(const struct state_set *a, const struct state_set *b)
+{
+	assert(a != NULL);
+	assert(a->a != NULL);
+	assert(b != NULL);
+	assert(b->a != NULL);
+
+	if (a->i != b->i) {
+		return a->i - b->i;
+	}
+
+	return memcmp(a->a, b->a, a->i * sizeof *a->a);
+}
+
+/*
+ * Return where an item would be, if it were inserted
+ */
+static size_t
+state_set_search(const struct state_set *set, fsm_state_t state)
+{
+	size_t start, end;
+	size_t mid;
+
+	assert(set != NULL);
+
+	start = mid = 0;
+	end = set->i;
+
+	while (start < end) {
+		int r;
+		mid = start + (end - start) / 2;
+		r = state_set_cmpval(state, set->a[mid]);
+		if (r < 0) {
+			end = mid;
+		} else if (r > 0) {
+			start = mid + 1;
+		} else {
+			return mid;
+		}
+	}
+
+	return mid;
+}
 
 struct state_set *
 state_set_create(const struct fsm_alloc *a)
 {
-	return (struct state_set *) set_create(a, NULL);
-}
+	struct state_set *set;
 
-struct state_set *
-state_set_create_singleton(const struct fsm_alloc *a,
-	struct fsm_state *state)
-{
-	return (struct state_set *) set_create_singleton(a, NULL, state);
+	set = f_malloc(a, sizeof *set);
+	if (set == NULL) {
+		return NULL;
+	}
+
+	set->a = f_malloc(a, SET_INITIAL * sizeof *set->a);
+	if (set->a == NULL) {
+		return NULL;
+	}
+
+	set->alloc = a;
+	set->i = 0;
+	set->n = SET_INITIAL;
+
+	return set;
 }
 
 void
@@ -31,28 +104,81 @@ state_set_free(struct state_set *set)
 		return;
 	}
 
-	set_free((struct set *) set);
+	assert(set->a != NULL);
+
+	free(set->a);
+	free(set);
 }
 
-struct fsm_state *
-state_set_add(struct state_set *set, struct fsm_state *st)
+int
+state_set_add(struct state_set *set, fsm_state_t state)
 {
-	assert(set != NULL);
-	assert(st != NULL);
+	size_t i;
 
-	return set_add((struct set *) set, st);
+	assert(set != NULL);
+
+	i = 0;
+
+	/*
+	 * If the item already exists in the set, return success.
+	 */
+	if (!state_set_empty(set)) {
+		i = state_set_search(set, state);
+		if (state_set_cmpval(state, set->a[i]) == 0) {
+			return state;
+		}
+	}
+
+	if (set->i) {
+		/* We're at capacity. Get more */
+		if (set->i == set->n) {
+			fsm_state_t *new;
+
+			new = f_realloc(set->alloc, set->a, (sizeof *set->a) * (set->n * 2));
+			if (new == NULL) {
+				return 0;
+			}
+
+			set->a = new;
+			set->n *= 2;
+		}
+
+		if (state_set_cmpval(state, set->a[i]) > 0) {
+			i++;
+		}
+
+		memmove(&set->a[i + 1], &set->a[i], (set->i - i) * (sizeof *set->a));
+		set->a[i] = state;
+		set->i++;
+	} else {
+		set->a[0] = state;
+		set->i = 1;
+	}
+
+	assert(state_set_contains(set, state));
+
+	return 1;
 }
 
 void
-state_set_remove(struct state_set *set, const struct fsm_state *st)
+state_set_remove(struct state_set *set, fsm_state_t state)
 {
-	assert(st != NULL);
+	size_t i;
 
-	if (set == NULL) {
+	if (state_set_empty(set)) {
 		return;
 	}
 
-	set_remove((struct set *) set, st);
+	i = state_set_search(set, state);
+	if (state_set_cmpval(state, set->a[i]) == 0) {
+		if (i < set->i) {
+			memmove(&set->a[i], &set->a[i + 1], (set->i - i - 1) * (sizeof *set->a));
+		}
+
+		set->i--;
+	}
+
+	assert(!state_set_contains(set, state));
 }
 
 int
@@ -62,27 +188,34 @@ state_set_empty(const struct state_set *set)
 		return 1;
 	}
 
-	return set_empty((const struct set *) set);
+	return set->i == 0;
 }
 
-struct fsm_state *
+fsm_state_t
 state_set_only(const struct state_set *set)
 {
 	assert(set != NULL);
+	assert(set->n >= 1);
+	assert(set->i == 1);
 
-	return set_only((const struct set *) set);
+	return set->a[0];
 }
 
-struct fsm_state *
-state_set_contains(const struct state_set *set, const struct fsm_state *st)
+int
+state_set_contains(const struct state_set *set, fsm_state_t state)
 {
-	assert(st != NULL);
+	size_t i;
 
-	if (set == NULL) {
-		return NULL;
+	if (state_set_empty(set)) {
+		return 0;
 	}
 
-	return set_contains((const struct set *) set, st);
+	i = state_set_search(set, state);
+	if (state_set_cmpval(state, set->a[i]) == 0) {
+		return 1;
+	}
+
+	return 0;
 }
 
 size_t
@@ -92,33 +225,37 @@ state_set_count(const struct state_set *set)
 		return 0;
 	}
 
-	return set_count((const struct set *) set);
+	assert(set->a != NULL);
+
+	return set->i;
 }
 
-struct fsm_state *
-state_set_first(struct state_set *set, struct state_iter *it)
+void
+state_set_reset(struct state_set *set, struct state_iter *it)
+{
+	it->i = 0;
+	it->set = set;
+}
+
+int
+state_set_next(struct state_iter *it, fsm_state_t *state)
 {
 	assert(it != NULL);
+	assert(state != NULL);
 
-	if (set == NULL) {
-		return NULL;
+	if (it->set == NULL) {
+		return 0;
 	}
 
-	return set_first((struct set *) set, &it->iter);
-}
+	if (it->i >= it->set->i) {
+		return 0;
+	}
 
-struct fsm_state *
-state_set_next(struct state_iter *it)
-{
-	assert(it != NULL);
+	*state = it->set->a[it->i];
 
-	return set_next(&it->iter);
-}
+	it->i++;
 
-struct state_set *
-state_set_copy(const struct state_set *src)
-{
-	return (struct state_set *)set_copy((struct set *)src);
+	return 1;
 }
 
 int
@@ -126,24 +263,48 @@ state_set_hasnext(struct state_iter *it)
 {
 	assert(it != NULL);
 
-	return set_hasnext(&it->iter);
+	return it->set && it->i + 1 < it->set->i;
 }
 
-const struct fsm_state **
+const fsm_state_t *
 state_set_array(const struct state_set *set)
 {
 	assert(set != NULL);
 
-	return (const struct fsm_state **) set_array((const struct set *) set);
+	if (set == NULL) {
+		return NULL;
+	}
+
+	return set->a;
 }
 
-int
-state_set_cmp(const struct state_set *a, const struct state_set *b)
+void
+state_set_rebase(struct state_set *set, fsm_state_t base)
 {
-	assert(a != NULL);
-	assert(b != NULL);
+	size_t i;
 
-	return set_cmp((const struct set *) a, (const struct set *) b);
+	if (set == NULL) {
+		return;
+	}
+
+	for (i = 0; i < set->i; i++) {
+		set->a[i] += base;
+	}
 }
 
+void
+state_set_replace(struct state_set *set, fsm_state_t old, fsm_state_t new)
+{
+	size_t i;
+
+	if (set == NULL) {
+		return;
+	}
+
+	for (i = 0; i < set->i; i++) {
+		if (set->a[i] == old) {
+			set->a[i] = new;
+		}
+	}
+}
 

@@ -32,7 +32,7 @@ struct re_char_class {
 
 static int
 link_char_class_into_fsm(struct re_char_class *cc, struct fsm *fsm,
-    struct fsm_state *x, struct fsm_state *y);
+    fsm_state_t x, fsm_state_t y);
 
 static int
 cc_add_char(struct re_char_class *cc, unsigned char byte);
@@ -220,26 +220,25 @@ static struct fsm *
 new_blank(const struct fsm_options *opt)
 {
 	struct fsm *new;
-	struct fsm_state *start;
-	
+	fsm_state_t start;
+
 	new = fsm_new(opt);
 	if (new == NULL) {
 		return NULL;
 	}
-	
-	start = fsm_addstate(new);
-	if (start == NULL) {
+
+	if (!fsm_addstate(new, &start)) {
 		goto error;
 	}
-	
+
 	fsm_setstart(new, start);
-	
+
 	return new;
-	
+
 error:
-	
+
 	fsm_free(new);
-	
+
 	return NULL;
 }
 
@@ -247,12 +246,12 @@ int
 re_char_class_ast_compile(struct re_char_class_ast *cca,
     struct fsm *fsm, enum re_flags flags,
     struct re_err *err, const struct fsm_options *opt,
-    struct fsm_state *x, struct fsm_state *y)
+    fsm_state_t x, fsm_state_t y)
 {
 	struct re_char_class cc;
 
 	memset(&cc, 0x00, sizeof(cc));
-	
+
 	cc.set = new_blank(opt);
 	if (cc.set == NULL) { goto cleanup; }
 
@@ -274,8 +273,10 @@ re_char_class_ast_compile(struct re_char_class_ast *cca,
 	return 1;
 
 cleanup:
+
 	if (cc.set != NULL) { fsm_free(cc.set); }
 	if (cc.dup != NULL) { fsm_free(cc.dup); }
+
 	return 0;
 }
 
@@ -284,73 +285,82 @@ cleanup:
 #include "../libfsm/internal.h" /* XXX */
 
 /* XXX: to go when dups show all spellings for group overlap */
-static const struct fsm_state *
+static int
 fsm_any(const struct fsm *fsm,
-    int (*predicate)(const struct fsm *, const struct fsm_state *))
+    int (*predicate)(const struct fsm *, fsm_state_t),
+	fsm_state_t *state)
 {
-	size_t i;
-	
+	fsm_state_t i;
+
 	assert(fsm != NULL);
 	assert(predicate != NULL);
-	
+	assert(state != NULL);
+
 	for (i = 0; i < fsm->statecount; i++) {
-		if (predicate(fsm, fsm->states[i])) {
-			return fsm->states[i];
+		if (predicate(fsm, i)) {
+			*state = i;
+			return 1;
 		}
 	}
-	
-	return NULL;
+
+	return 0;
 }
 
 /* TODO: centralise as fsm_unionxy() perhaps */
 static int
-fsm_unionxy(struct fsm *a, struct fsm *b, struct fsm_state *x, struct fsm_state *y)
+fsm_unionxy(struct fsm *a, struct fsm *b, fsm_state_t x, fsm_state_t y)
 {
-	struct fsm_state *sa, *sb;
-	struct fsm_state *end;
+	fsm_state_t sa, sb;
+	fsm_state_t base_a, base_b;
+	fsm_state_t end;
 	struct fsm *q;
-	
+
 	assert(a != NULL);
 	assert(b != NULL);
-	assert(x != NULL);
-	assert(y != NULL);
-	
-	sa = fsm_getstart(a);
-	sb = fsm_getstart(b);
-	
-	end = fsm_collate(b, fsm_isend);
-	if (end == NULL) {
+
+	if (!fsm_getstart(a, &sa)) {
 		return 0;
 	}
-	
+
+	if (!fsm_getstart(b, &sb)) {
+		return 0;
+	}
+
+	if (!fsm_collate(b, &end, fsm_isend)) {
+		return 0;
+	}
+
 	/* TODO: centralise as fsm_clearends() or somesuch */
 	{
-		size_t i;
+		fsm_state_t s;
 
-		for (i = 0; i < b->statecount; i++) {
-			fsm_setend(b, b->states[i], 0);
+		for (s = 0; s < b->statecount; s++) {
+			fsm_setend(b, s, 0);
 		}
 	}
-	
-	q = fsm_merge(a, b);
+
+	q = fsm_merge(a, b, &base_a, &base_b);
 	assert(q != NULL);
-	
+
+	sa += base_a;
+	sb += base_b;
+
 	fsm_setstart(q, sa);
-	
+
 	if (!fsm_addedge_epsilon(q, x, sb)) {
 		return 0;
 	}
-	
+
 	if (!fsm_addedge_epsilon(q, end, y)) {
 		return 0;
 	}
-	
+
 	return 1;
 }
 
 static int
 link_char_class_into_fsm(struct re_char_class *cc, struct fsm *fsm,
-    struct fsm_state *x, struct fsm_state *y)
+    fsm_state_t x, fsm_state_t y)
 {
 	int is_empty;
 	struct re_err *err = cc->err;
@@ -362,9 +372,9 @@ link_char_class_into_fsm(struct re_char_class *cc, struct fsm *fsm,
 		if (err != NULL) { err->e = RE_EERRNO; }
 		return 0;
 	}
-	
+
 	if (!is_empty) {
-		const struct fsm_state *end;
+		fsm_state_t start, end;
 		int n;
 
 		if (err == NULL) {
@@ -372,7 +382,7 @@ link_char_class_into_fsm(struct re_char_class *cc, struct fsm *fsm,
 		}
 
 		/* TODO: would like to show the original spelling verbatim, too */
-		
+
 		/* fsm_example requires no epsilons;
 		 * TODO: would fsm_glushkovise() here, when we have it */
 		if (!fsm_determinise(cc->dup)) {
@@ -381,31 +391,31 @@ link_char_class_into_fsm(struct re_char_class *cc, struct fsm *fsm,
 		}
 
 		/* XXX: this is just one example; really I want to show the entire set */
-		end = fsm_any(cc->dup, fsm_isend);
-		assert(end != NULL);
-		assert(end != fsm_getstart(cc->dup)); /* due to the structure */
-		
+		(void) fsm_any(cc->dup, fsm_isend, &end);
+		(void) fsm_getstart(cc->dup, &start);
+		assert(end != start); /* due to the structure */
+
 		n = fsm_example(cc->dup, end, err->dup, sizeof err->dup);
 		if (n == -1) {
 			err->e = RE_EERRNO;
 			return 0;
 		}
-		
+
 		/* due to the structure */
 		assert(n > 0);
-		
+
 		/* XXX: to return when we can show minimal coverage again */
 		strcpy(err->set, err->dup);
-		
+
 		err->e  = RE_EOVERLAP;
 		return 0;
 	}
-	
+
 	if (!fsm_minimise(cc->set)) {
 		if (err != NULL) { err->e = RE_EERRNO; }
 		return 0;
 	}
-	
+
 	if (!fsm_unionxy(fsm, cc->set, x, y)) {
 		if (err != NULL) { err->e = RE_EERRNO; }
 		return 0;
@@ -414,24 +424,22 @@ link_char_class_into_fsm(struct re_char_class *cc, struct fsm *fsm,
 
 	fsm_free(cc->dup);
 	cc->dup = NULL;
-		
+
 	return 1;
 }
 
 /* FIXME: duplication */
 static int
 addedge_literal(struct fsm *fsm, enum re_flags flags,
-    struct fsm_state *from, struct fsm_state *to, char c)
+    fsm_state_t from, fsm_state_t to, char c)
 {
 	assert(fsm != NULL);
-	assert(from != NULL);
-	assert(to != NULL);
-	
+
 	if (flags & RE_ICASE) {
 		if (!fsm_addedge_literal(fsm, from, to, tolower((unsigned char) c))) {
 			return 0;
 		}
-		
+
 		if (!fsm_addedge_literal(fsm, from, to, toupper((unsigned char) c))) {
 			return 0;
 		}
@@ -440,50 +448,48 @@ addedge_literal(struct fsm *fsm, enum re_flags flags,
 			return 0;
 		}
 	}
-	
+
 	return 1;
 }
 
 int
 cc_add_char(struct re_char_class *cc, unsigned char c)
 {
-	const struct fsm_state *p;
-	struct fsm_state *start, *end;
+	fsm_state_t p;
+	fsm_state_t start, end;
 	struct fsm *fsm;
 	char a[2];
 	char *s = a;
-	
+	int e;
+
 	assert(cc != NULL);
-	
+
 	a[0] = c;
 	a[1] = '\0';
-	
-	errno = 0;
-	p = fsm_exec(cc->set, fsm_sgetc, &s);
-	if (p == NULL && errno != 0) {
+
+	e = fsm_exec(cc->set, fsm_sgetc, &s, &p);
+	if (e == -1) {
 		goto fail;
 	}
-	
-	if (p == NULL) {
+
+	if (!e) {
 		fsm = cc->set;
 	} else {
 		fsm = cc->dup;
 	}
-	
-	start = fsm_getstart(fsm);
-	assert(start != NULL);
-	
-	end = fsm_addstate(fsm);
-	if (end == NULL) {
+
+	(void) fsm_getstart(fsm, &start);
+
+	if (!fsm_addstate(fsm, &end)) {
 		goto fail;
 	}
-	
+
 	fsm_setend(fsm, end, 1);
-	
+
 	if (!addedge_literal(fsm, cc->flags, start, end, c)) {
 		goto fail;
 	}
-	
+
 	return 1;
 
 fail:

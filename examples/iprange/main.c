@@ -421,11 +421,13 @@ important(unsigned n)
 }
 
 static void
-carryopaque(const struct fsm_state **set, size_t n,
-	struct fsm *fsm, struct fsm_state *st)
+carryopaque(const fsm_state_t *set, size_t n,
+	struct fsm *fsm, fsm_state_t st)
 {
 	void *o = NULL;
 	size_t i;
+
+	assert(set != NULL);
 
 	for (i = 0; i < n; i++) {
 		if (!fsm_isend(fsm, set[i])) {
@@ -641,7 +643,7 @@ main(int argc, char **argv)
 
 	struct record *r;
 	RB_FOREACH(r, recmap, &recmap) {
-		struct fsm_state *start;
+		fsm_state_t start;
 
 		if (fsm_minimise(r->fsm) == 0) {
 			perror("fsm_minimise");
@@ -650,8 +652,7 @@ main(int argc, char **argv)
 
 		fsm_setendopaque(r->fsm, r);
 
-		start = fsm_getstart(r->fsm);
-		assert(start != NULL);
+		(void) fsm_getstart(r->fsm, &start);
 
 		fsm = fsm_merge(fsm, r->fsm);
 		if (fsm == NULL) {

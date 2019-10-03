@@ -19,13 +19,6 @@ struct set *
 set_create(const struct fsm_alloc *a,
 	int (*cmp)(const void *a, const void *b));
 
-struct set *
-set_create_singleton(const struct fsm_alloc *a,
-	int (*cmp)(const void *a, const void *b), void *item);
-
-struct set *
-set_copy(const struct set *set);
-
 void *
 set_add(struct set *set, void *item);
 
@@ -79,9 +72,6 @@ set_only(const struct set *set);
 
 int
 set_hasnext(const struct set_iter *it);
-
-const void **
-set_array(const struct set *set);
 
 #endif
 

@@ -88,61 +88,6 @@ set_create(const struct fsm_alloc *a,
 	return set;
 }
 
-static int
-set_bulkcmpval(const void *a, const void *b)
-{
-	const void *pa = ((void **)a)[0], *pb = ((void **)b)[0];
-
-	return (pa > pb) - (pa < pb);
-}
-
-struct set *
-set_create_singleton(const struct fsm_alloc *a,
-	int (*cmp)(const void *a, const void *b), void *item)
-{
-	struct set *s;
-
-	s = f_malloc(a, sizeof *s);
-	if (s == NULL) {
-		return NULL;
-	}
-
-	s->a = f_malloc(a, sizeof *s->a);
-	if (s->a == NULL) {
-		f_free(a, s);
-		return NULL;
-	}
-
-	s->alloc = a;
-	s->a[0] = item;
-	s->i = s->n = 1;
-	s->cmp = (cmp != NULL) ? cmp : set_cmpval;
-
-	return s;
-}
-
-struct set *
-set_copy(const struct set *set)
-{
-	struct set *s;
-	s = malloc(sizeof *s);
-	if (s == NULL) {
-		return NULL;
-	}
-
-	s->cmp = set->cmp;
-	s->a = malloc(set->i * sizeof s->a[0]);
-	if (s->a == NULL) {
-		free(s);
-		return NULL;
-	}
-
-	s->i = s->n = set->i;
-	memcpy(s->a, set->a, s->n * sizeof s->a[0]);
-
-	return s;
-}
-
 void *
 set_add(struct set *set, void *item)
 {
@@ -307,6 +252,17 @@ set_empty(const struct set *set)
 	return set->i == 0;
 }
 
+void
+set_reset(const struct set *set, struct set_iter *it)
+{
+	assert(set != NULL);
+	assert(set->a != NULL);
+	assert(it != NULL);
+
+	it->i = 0;
+	it->set = set;
+}
+
 void *
 set_first(const struct set *set, struct set_iter *it)
 {
@@ -389,15 +345,5 @@ set_hasnext(const struct set_iter *it)
 	assert(it != NULL);
 
 	return it->set && it->i + 1 < it->set->i;
-}
-
-const void **
-set_array(const struct set *set)
-{
-	if (set == NULL) {
-		return 0;
-	}
-
-	return (const void **) set->a;
 }
 

@@ -16,9 +16,10 @@ struct fsm_options;
 struct trie_state {
 	struct trie_state *children[256];
 	struct trie_state *fail;
-	struct fsm_state *st;
+	fsm_state_t st;
 	unsigned int index;
 	unsigned int output:1;
+	unsigned int have_st:1;
 };
 
 struct trie_pool;
@@ -43,7 +44,8 @@ int
 trie_add_failure_edges(struct trie_graph *g);
 
 struct fsm *
-trie_to_fsm(struct fsm *fsm, struct trie_graph *g, struct fsm_state *end);
+trie_to_fsm(struct fsm *fsm, struct trie_graph *g,
+	int have_end, fsm_state_t end);
 
 void
 trie_dump(struct trie_graph *g, FILE *f);

@@ -35,7 +35,8 @@ struct hashset {
 #define UNSET_HASH     (0UL)
 
 static int
-is_pow2(size_t n) {
+is_pow2(size_t n)
+{
 	return (n & (n-1)) == 0;
 }
 
@@ -386,7 +387,8 @@ hashptr(const void *p) {
 }
 
 unsigned long
-hashrec(const void *p, size_t n) {
+hashrec(const void *p, size_t n)
+{
 	const unsigned char *s = p;
 	unsigned long h = 0;
 	unsigned char ha[sizeof h];
